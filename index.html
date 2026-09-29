@@ -1,0 +1,795 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Central de Compras</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --tinta:#1B2A24; --papel:#F5F6F2; --branco:#FFFFFF;
+  --verde:#1E7A4C; --verde-escuro:#155C39;
+  --ambar:#F2B41B; --ambar-claro:#FBF1D3;
+  --linha:#D8DDD4; --cinza:#68716B; --verm:#B5432E; --verm-claro:#F7E4DF;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{font-family:'Archivo',system-ui,sans-serif;background:var(--papel);color:var(--tinta);font-size:16px;line-height:1.45}
+header{background:var(--tinta);color:#fff;padding:14px 18px;display:flex;align-items:baseline;gap:10px}
+header h1{font-size:20px;font-weight:800;letter-spacing:-.02em}
+header .emp{color:#B8C4BC;font-size:13px;font-weight:500;flex:1}
+header a.cot{color:var(--ambar);font-size:13px;font-weight:700;text-decoration:none;white-space:nowrap}
+main{max-width:860px;margin:0 auto;padding:18px 14px 60px}
+h3{font-size:15px;font-weight:700;margin:24px 0 8px}
+button{font-family:inherit;font-size:15px;font-weight:600;border:none;border-radius:8px;cursor:pointer;padding:11px 16px}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--verde);outline-offset:1px}
+.bt-verde{background:var(--verde);color:#fff}
+.bt-verde:active{background:var(--verde-escuro)}
+.bt-mini{padding:7px 12px;font-size:13px;border-radius:6px}
+.bt-x{background:none;border:none;color:var(--cinza);font-size:16px;font-weight:700;padding:4px 8px;cursor:pointer}
+.bt-x:hover{color:var(--verm)}
+input[type=text],input[type=password],input[type=date],select{width:100%;font-family:inherit;font-size:16px;padding:11px 12px;border:1px solid var(--linha);border-radius:8px;background:var(--branco);color:var(--tinta)}
+label{display:block;font-size:13px;font-weight:600;color:var(--cinza);margin:12px 0 5px}
+.caixa{background:var(--branco);border:1px solid var(--linha);border-radius:10px;padding:16px}
+.msg{font-size:14px;color:var(--cinza);margin:8px 0}
+.erro{color:var(--verm);font-size:14px;margin:10px 0}
+.centro{max-width:380px;margin:60px auto;padding:0 16px}
+.centro h2{font-size:22px;font-weight:800;margin-bottom:4px}
+.centro p{font-size:14px;color:var(--cinza);margin-bottom:14px}
+.centro button{width:100%;margin-top:16px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:18px;background:var(--tinta);color:#fff;font-size:14px;font-weight:600;padding:10px 18px;border-radius:8px;opacity:0;transition:opacity .2s;z-index:9}
+.toast.on{opacity:1}
+@media (prefers-reduced-motion:reduce){.toast{transition:none}}
+
+.ind-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:14px}
+@media (min-width:640px){.ind-grid{grid-template-columns:repeat(4,1fr)}}
+.ind{background:var(--branco);border:1px solid var(--linha);border-radius:10px;padding:14px}
+.ind .num{font-size:26px;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.ind .rot{font-size:12px;font-weight:600;color:var(--cinza);margin-top:2px}
+.ind.destaque{background:var(--tinta);border-color:var(--tinta);color:#fff}
+.ind.destaque .rot{color:#B8C4BC}
+
+.atalhos{display:flex;flex-wrap:wrap;gap:8px}
+.atalho{display:flex;align-items:center;gap:2px;background:var(--branco);border:1px solid var(--linha);border-radius:8px}
+.atalho a{display:block;padding:10px 14px;font-size:14px;font-weight:700;color:var(--verde-escuro);text-decoration:none}
+.atalho.fixo{background:var(--ambar-claro);border-color:#E5D194}
+
+details{margin-top:12px}
+summary{font-size:14px;font-weight:600;color:var(--verde);cursor:pointer}
+.form-linha{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
+.form-linha .cheio{grid-column:1 / -1}
+.form-acao{margin-top:14px}
+
+.item-linha{display:flex;align-items:center;gap:10px;padding:11px 0;border-top:1px solid var(--linha);flex-wrap:wrap}
+.item-linha:first-of-type{border-top:none}
+.item-linha .txt{flex:1;min-width:180px}
+.item-linha .tit{font-weight:600}
+.item-linha .sub{font-size:13px;color:var(--cinza)}
+.item-linha a.doc{font-size:13px;font-weight:700;color:var(--verde);text-decoration:none}
+.pill{font-size:12px;font-weight:700;padding:3px 9px;border-radius:99px;white-space:nowrap}
+.pill.pendente{background:var(--ambar-claro);color:#8A6410}
+.pill.em_cotacao{background:#E2F0E8;color:var(--verde-escuro)}
+.pill.comprado{background:var(--verde);color:#fff}
+.pill.negado{background:#ECECEA;color:var(--cinza)}
+.pill.alta{background:var(--verm-claro);color:var(--verm)}
+.pill.baixa,.pill.normal{background:#ECECEA;color:var(--cinza)}
+.pill.freq{background:#ECECEA;color:var(--cinza);font-weight:600}
+select.status{width:auto;font-size:13px;padding:6px 8px;border-radius:6px}
+.check{width:20px;height:20px;flex:none}
+.rotina-feita .tit{text-decoration:line-through;color:var(--cinza)}
+.cat-tit{font-size:13px;font-weight:800;color:var(--cinza);text-transform:uppercase;letter-spacing:.04em;margin:14px 0 2px}
+.cat-tit:first-of-type{margin-top:0}
+.valor{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
+
+/* navegação */
+.abas{display:flex;gap:6px;margin-bottom:4px}
+.aba{background:none;color:var(--cinza);padding:8px 12px;font-size:14px;border-radius:99px}
+.aba.on{background:var(--tinta);color:#fff}
+
+/* ocorrências */
+.oc-botoes{display:grid;grid-template-columns:1fr;gap:8px}
+@media (min-width:640px){.oc-botoes{grid-template-columns:repeat(3,1fr)}}
+.oc-bt{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;padding:14px;border-radius:10px;color:#fff;min-height:74px}
+.oc-bt .t{font-size:15px;font-weight:800;line-height:1.2}
+.oc-bt .n{font-size:12px;font-weight:600;opacity:.85}
+.oc-bt.urgencia{background:var(--verm)}
+.oc-bt.prazo_curto{background:#B77D0B}
+.oc-bt.ruptura{background:var(--tinta)}
+.oc-bt.sel{box-shadow:0 0 0 3px var(--papel),0 0 0 5px currentColor;outline:none}
+.oc-form{margin-top:14px;border-top:1px solid var(--linha);padding-top:4px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{background:var(--papel);border:1px solid var(--linha);color:var(--tinta);font-size:14px;font-weight:600;padding:8px 12px;border-radius:99px}
+.chip.on{background:var(--verde);border-color:var(--verde);color:#fff}
+textarea{width:100%;font-family:inherit;font-size:16px;padding:11px 12px;border:1px solid var(--linha);border-radius:8px;background:var(--branco);color:var(--tinta);min-height:74px;resize:vertical}
+.oc-acoes{display:flex;gap:8px;align-items:center;margin-top:14px;flex-wrap:wrap}
+.bt-cinza{background:#ECECEA;color:var(--tinta)}
+.oc-dia{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--cinza);margin-left:auto}
+.oc-dia input{width:auto;padding:7px 8px;font-size:14px}
+.pill.urgencia{background:var(--verm-claro);color:var(--verm)}
+.pill.prazo_curto{background:var(--ambar-claro);color:#8A6410}
+.pill.ruptura{background:#E3E6E1;color:var(--tinta)}
+.toast button{background:none;color:var(--ambar);padding:0 0 0 14px;font-size:14px;font-weight:800}
+
+/* checagem NF + Mercado Livre */
+.chk-topo{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px}
+.chk-status{font-size:13px;font-weight:700;padding:5px 11px;border-radius:99px}
+.chk-status.ok{background:var(--verde);color:#fff}
+.chk-status.pend{background:var(--ambar-claro);color:#8A6410}
+.chk-status.venc{background:var(--verm-claro);color:var(--verm)}
+.chk-status.folga{background:#ECECEA;color:var(--cinza)}
+.chk-corpo{display:grid;grid-template-columns:1fr;gap:14px}
+@media (min-width:640px){.chk-corpo{grid-template-columns:1fr 190px}}
+.chk-item{display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--linha);border-radius:8px;margin:8px 0 0;cursor:pointer;font-weight:600;font-size:15px;color:var(--tinta)}
+.chk-item input{width:24px;height:24px;flex:none;accent-color:var(--verde)}
+.chk-item.feito{background:#E9F4EE;border-color:#BFDCCB}
+.chk-item .sub{display:block;font-size:12px;font-weight:500;color:var(--cinza)}
+.chk-ind{background:var(--papel);border-radius:10px;padding:14px;align-self:start}
+.chk-ind .num{font-size:30px;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.chk-ind .rot{font-size:12px;font-weight:700;color:var(--cinza)}
+.chk-ind .det{font-size:12px;color:var(--cinza);margin-top:6px;line-height:1.5}
+.pill.no_prazo{background:var(--verde);color:#fff}
+.pill.atrasada{background:var(--ambar-claro);color:#8A6410}
+.pill.nao_feita{background:var(--verm-claro);color:var(--verm)}
+.pill.pendente_chk{background:#ECECEA;color:var(--cinza)}
+.passos{font-size:14px;margin:8px 0 4px 18px}
+.passos li{margin:3px 0}
+.passos code{background:var(--papel);padding:1px 6px;border-radius:4px;font-size:13px}
+.contato{display:grid;grid-template-columns:1fr 1fr;gap:0 10px;padding:6px 0 10px;border-bottom:1px solid var(--linha)}
+@media (min-width:640px){.contato{grid-template-columns:1fr 1fr 1fr auto;align-items:end}}
+.contato label{margin-top:8px}
+
+/* relatório */
+.rel-filtro{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end}
+.rel-filtro .campo{flex:1;min-width:130px}
+.rel-filtro label{margin-top:0}
+.rel-tot{display:grid;grid-template-columns:1fr;gap:10px;margin-top:14px}
+@media (min-width:640px){.rel-tot{grid-template-columns:repeat(3,1fr)}}
+.rel-tot .ind{border-left:5px solid var(--linha)}
+.rel-tot .ind.urgencia{border-left-color:var(--verm)}
+.rel-tot .ind.prazo_curto{border-left-color:#B77D0B}
+.rel-tot .ind.ruptura{border-left-color:var(--tinta)}
+.delta{font-size:12px;font-weight:600;color:var(--cinza);margin-top:4px}
+.delta.sobe{color:var(--verm)} .delta.desce{color:var(--verde)}
+.barras{margin-top:6px}
+.barra{display:grid;grid-template-columns:120px 1fr 32px;gap:8px;align-items:center;font-size:13px;padding:3px 0}
+.barra .trilho{background:var(--papel);border-radius:4px;height:14px;overflow:hidden}
+.barra .enche{height:100%;border-radius:4px}
+.barra .q{font-weight:700;text-align:right;font-variant-numeric:tabular-nums}
+.enche.urgencia{background:var(--verm)} .enche.prazo_curto{background:#B77D0B} .enche.ruptura{background:var(--tinta)}
+table.rel{width:100%;border-collapse:collapse;font-size:14px}
+table.rel th{text-align:left;font-size:12px;color:var(--cinza);font-weight:700;padding:6px 8px 6px 0;border-bottom:1px solid var(--linha)}
+table.rel td{padding:8px 8px 8px 0;border-bottom:1px solid var(--linha);vertical-align:top}
+.rel-acoes{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.so-print{display:none}
+@media print{
+  header,.abas,.rel-filtro,.rel-acoes,.toast,.no-print{display:none!important}
+  body{background:#fff;font-size:12px}
+  .caixa,.ind{border-color:#bbb;break-inside:avoid}
+  .so-print{display:block}
+  main{padding:0;max-width:none}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>Central de Compras</h1><span class="emp" id="emp"></span>
+  <a class="cot" href="../qsol-cotacoes/">Cotações &rarr;</a>
+</header>
+<main id="app"><p class="msg">Carregando…</p></main>
+<div class="toast" id="toast"></div>
+<script>
+var API = 'https://eklguenkzbzkhwdvuogx.supabase.co/functions/v1/hub/api';
+var pin = localStorage.getItem('cot_pin') || '';
+var app = document.getElementById('app');
+var D = null;
+
+function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+var toastTimer = null;
+function toast(t, acao, fn){
+  var el = document.getElementById('toast');
+  el.textContent = t;
+  if (acao) { var b = document.createElement('button'); b.textContent = acao; b.onclick = function(){ el.className = 'toast'; fn(); }; el.appendChild(b); }
+  el.className = 'toast on';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ el.className = 'toast'; }, acao ? 6000 : 2200);
+}
+function moeda(v){ return new Intl.NumberFormat('pt-BR', {style:'currency', currency:'BRL'}).format(v); }
+function hojeISO(){ var d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
+function dBr(s){ if (!s) return ''; var p = String(s).slice(0,10).split('-'); return p[2] + '/' + p[1] + '/' + p[0].slice(2); }
+function parseValor(t){
+  t = String(t || '').replace(/[R$ ]/g, '');
+  if (!t) return null;
+  if (t.indexOf(',') >= 0) { t = t.split('.').join('').replace(',', '.'); }
+  var v = parseFloat(t);
+  return isNaN(v) ? null : v;
+}
+
+function api(caminho, opts){
+  opts = opts || {};
+  opts.headers = Object.assign({'Content-Type':'application/json','x-pin':pin}, opts.headers || {});
+  return fetch(API + caminho, opts).then(function(r){
+    if (r.status === 401) { telaLogin('PIN incorreto ou sessão expirada.'); throw new Error('401'); }
+    return r.json().then(function(j){ if (!r.ok) { throw new Error(j.erro || 'Erro'); } return j; });
+  });
+}
+
+function boot(){
+  fetch(API + '/estado').then(function(r){ return r.json(); }).then(function(e){
+    document.getElementById('emp').textContent = e.empresa || '';
+    if (!e.temPin) {
+      app.innerHTML = '<div class="centro"><h2>Quase lá</h2><p>O PIN do setor ainda não foi criado. Abra primeiro o sistema de cotações, faça o primeiro acesso por lá, e depois volte aqui.</p><a href="../qsol-cotacoes/"><button class="bt-verde">Abrir sistema de cotações</button></a></div>';
+      return;
+    }
+    if (!pin) { telaLogin(''); } else { carregar(); }
+  }).catch(function(){ app.innerHTML = '<p class="erro">Não consegui carregar. Verifique a conexão e recarregue a página.</p>'; });
+}
+
+function telaLogin(msg){
+  app.innerHTML = '<div class="centro"><h2>Entrar na central</h2>'
+    + '<p>Digite o PIN do setor (o mesmo do sistema de cotações).</p>'
+    + '<input type="password" id="l-pin" inputmode="numeric" autocomplete="current-password">'
+    + '<div class="erro">' + esc(msg) + '</div>'
+    + '<button class="bt-verde" id="l-ok">Entrar</button></div>';
+  var entrar = function(){
+    pin = document.getElementById('l-pin').value.trim();
+    api('/tudo?dia=' + hojeISO()).then(function(d){ localStorage.setItem('cot_pin', pin); D = d; render(); }).catch(function(){});
+  };
+  document.getElementById('l-ok').onclick = entrar;
+  document.getElementById('l-pin').addEventListener('keydown', function(ev){ if (ev.key === 'Enter') entrar(); });
+}
+
+function carregar(){
+  api('/tudo?dia=' + hojeISO()).then(function(d){ D = d; render(); }).catch(function(){});
+}
+
+var VIEW = location.hash === '#relatorio' ? 'relatorio' : 'painel';
+var OC = { tipo: null, setor: null, texto: '', dia: '' };
+var ORDEM_TIPOS = ['urgencia', 'prazo_curto', 'ruptura'];
+
+function abas(){
+  return '<div class="abas"><button class="aba' + (VIEW === 'painel' ? ' on' : '') + '" data-view="painel">Painel</button>'
+    + '<button class="aba' + (VIEW === 'relatorio' ? ' on' : '') + '" data-view="relatorio">Relatório de indicadores</button></div>';
+}
+
+function blocoOcorrencias(){
+  var h = '<h3>Registrar indicador</h3><div class="caixa"><div class="oc-botoes">';
+  for (var t = 0; t < ORDEM_TIPOS.length; t++) {
+    var k = ORDEM_TIPOS[t], n = 0;
+    for (var o = 0; o < D.ocorrencias_mes.length; o++) if (D.ocorrencias_mes[o].tipo === k) n++;
+    h += '<button class="oc-bt ' + k + (OC.tipo === k ? ' sel' : '') + '" data-oc="' + k + '" aria-pressed="' + (OC.tipo === k) + '">'
+      + '<span class="t">' + esc(D.tipos[k].nome) + '</span><span class="n">' + n + ' este mês</span></button>';
+  }
+  h += '</div>';
+  if (OC.tipo) {
+    var tp = D.tipos[OC.tipo];
+    h += '<div class="oc-form"><label>De qual setor?</label><div class="chips">';
+    for (var s = 0; s < tp.setores.length; s++) {
+      var st = tp.setores[s];
+      h += '<button class="chip' + (OC.setor === st ? ' on' : '') + '" data-setor="' + esc(st) + '">' + esc(st) + '</button>';
+    }
+    var dica = OC.tipo === 'urgencia' ? 'ex.: compressor da câmara fria parou, compra de peça no mesmo dia'
+      : OC.tipo === 'prazo_curto' ? 'ex.: pedido de 200 copos para o evento de sexta, chegou na terça'
+      : 'ex.: acabou o gás de chopp, faltou no sábado à noite';
+    h += '</div><label for="oc-txt">O que aconteceu?</label>'
+      + '<textarea id="oc-txt" placeholder="' + dica + '">' + esc(OC.texto) + '</textarea>'
+      + '<div class="oc-acoes"><button class="bt-verde" id="oc-ok">Registrar</button><button class="bt-cinza" id="oc-cancel">Cancelar</button>'
+      + '<span class="oc-dia"><label for="oc-dia" style="margin:0">Data</label><input type="date" id="oc-dia" value="' + (OC.dia || hojeISO()) + '"></span></div></div>';
+  }
+  if (D.ocorrencias_mes.length) {
+    h += '<details><summary>Registros deste mês (' + D.ocorrencias_mes.length + ')</summary>';
+    for (var r = 0; r < D.ocorrencias_mes.length; r++) {
+      var oc = D.ocorrencias_mes[r];
+      h += '<div class="item-linha"><div class="txt"><span class="tit">' + esc(oc.descricao) + '</span>'
+        + '<div class="sub">' + esc(oc.setor) + ' · ' + dBr(oc.dia) + '</div></div>'
+        + '<span class="pill ' + oc.tipo + '">' + esc(rotuloCurto(oc.tipo)) + '</span>'
+        + '<button class="bt-x" data-del="ocorrencias/' + oc.id + '" title="Excluir">&times;</button></div>';
+    }
+    h += '</details>';
+  }
+  return h + '</div>';
+}
+// ============================================ checagem NF + Mercado Livre ===
+var CONT = null; // contatos em edição
+var NOME_DIA = ['dom','seg','ter','qua','qui','sex','sáb'];
+function diaCurto(iso){ var d = new Date(iso + 'T12:00:00'); return NOME_DIA[d.getDay()] + ', ' + dBr(iso).slice(0,5); }
+function horaBr(ts){ return new Date(ts).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}); }
+var SIT = { no_prazo:'no prazo', atrasada:'feita com atraso', nao_feita:'não feita', pendente:'hoje, até 17h' };
+
+function blocoChecagem(){
+  var c = D.checagem; if (!c) return '';
+  var reg = c.registro || {}, h = '<h3>Checagem: e-mail de NFs e Mercado Livre</h3><div class="caixa">';
+  h += '<div class="chk-topo">';
+  if (!c.eh_dia) h += '<span class="chk-status folga">Hoje não tem checagem</span><span class="msg" style="margin:0">Próxima: ' + diaCurto(c.proxima) + ', até ' + c.hora_limite + 'h</span>';
+  else if (reg.concluida_em) h += '<span class="chk-status ok">✓ Feita hoje às ' + horaBr(reg.concluida_em) + '</span>';
+  else if (c.vencida) h += '<span class="chk-status venc">Prazo de hoje encerrou às ' + c.hora_limite + 'h</span><span class="msg" style="margin:0">Confira e marque assim que puder</span>';
+  else h += '<span class="chk-status pend">Pendente · prazo hoje até ' + c.hora_limite + 'h</span>';
+  h += '</div><div class="chk-corpo"><div>';
+  if (c.eh_dia) {
+    h += '<label class="chk-item' + (reg.email_ok ? ' feito' : '') + '"><input type="checkbox" id="chk-email"' + (reg.email_ok ? ' checked' : '') + '>'
+      + '<span>Conferi o e-mail de compras<span class="sub">notas fiscais recebidas</span></span></label>'
+      + '<label class="chk-item' + (reg.ml_ok ? ' feito' : '') + '"><input type="checkbox" id="chk-ml"' + (reg.ml_ok ? ' checked' : '') + '>'
+      + '<span>Conferi os pedidos no Mercado Livre<span class="sub">status de todos os pedidos em aberto</span></span></label>'
+      + '<label for="chk-obs">Encontrou algo? (opcional)</label>'
+      + '<textarea id="chk-obs" style="min-height:52px" placeholder="ex.: NF da Distribuidora Sol chegou; pedido do ML das lâmpadas está atrasado">' + esc(reg.obs || '') + '</textarea>';
+  } else {
+    h += '<p class="msg">A checagem é toda segunda, quarta e sexta, até as ' + c.hora_limite + 'h. Se não for marcada até lá, o WhatsApp avisa.</p>';
+  }
+  h += '</div>';
+  var r = c.resumo;
+  h += '<div class="chk-ind">';
+  if (!r.previstas) h += '<div class="num">—</div><div class="rot">checagens no prazo este mês</div><div class="det">Começa a contar na primeira checagem.</div>';
+  else h += '<div class="num">' + Math.round(r.no_prazo / r.previstas * 100) + '%</div><div class="rot">checagens no prazo este mês</div>'
+    + '<div class="det">' + r.no_prazo + ' de ' + r.previstas + ' no prazo<br>' + r.atrasadas + ' com atraso · ' + r.nao_feitas + ' não feita' + (r.nao_feitas === 1 ? '' : 's') + '</div>';
+  h += '</div></div>';
+
+  if (r.lista.length) {
+    h += '<details><summary>Histórico do mês (' + r.lista.length + ')</summary>';
+    for (var i = 0; i < r.lista.length; i++) {
+      var x = r.lista[i];
+      h += '<div class="item-linha"><div class="txt"><span class="tit">' + diaCurto(x.dia) + '</span>'
+        + '<div class="sub">' + (x.concluida_em ? 'marcada ' + (new Date(x.concluida_em).toLocaleDateString('sv-SE') === x.dia ? 'às ' + horaBr(x.concluida_em) : 'em ' + dBr(new Date(x.concluida_em).toLocaleDateString('sv-SE'))) : 'sem marcação')
+        + (x.alerta_em ? ' · alerta enviado no WhatsApp' : '') + '</div></div>'
+        + '<span class="pill ' + (x.situacao === 'pendente' ? 'pendente_chk' : x.situacao) + '">' + SIT[x.situacao] + '</span></div>';
+    }
+    h += '</details>';
+  }
+
+  if (!CONT) {
+    CONT = c.contatos.map(function(k){ return {nome:k.nome, telefone:k.telefone, apikey:'', salvo:true}; });
+    if (!CONT.length) CONT = [{nome:'Compras', telefone:'', apikey:''}, {nome:'Gestor', telefone:'', apikey:''}];
+  }
+  h += '<details' + (c.contatos.length ? '' : ' open') + '><summary>Alertas no WhatsApp (' + (c.contatos.length ? c.contatos.length + ' contato' + (c.contatos.length > 1 ? 's' : '') : 'configurar') + ')</summary>'
+    + '<p class="msg">Às ' + c.hora_limite + 'h de seg, qua e sex, se a checagem não estiver marcada, cada contato abaixo recebe uma mensagem. Para ativar, faça isto <b>uma vez em cada celular</b>:</p>'
+    + '<ol class="passos"><li>Salve o contato <code>+34 623 80 11 90</code> (CallMeBot)</li>'
+    + '<li>Mande para ele no WhatsApp: <code>I allow callmebot to send me messages</code></li>'
+    + '<li>Em até 2 minutos chega uma <b>apikey</b> (um número). Cole no campo "Chave" abaixo.</li></ol>'
+    + '<p class="msg">Se o contato não responder, confira o número atualizado em callmebot.com.</p>';
+  for (var k = 0; k < CONT.length; k++) {
+    var ct = CONT[k];
+    h += '<div class="contato"><div><label>Nome</label><input type="text" data-ct="' + k + '" data-campo="nome" value="' + esc(ct.nome) + '"></div>'
+      + '<div><label>Celular com DDD</label><input type="text" inputmode="tel" data-ct="' + k + '" data-campo="telefone" placeholder="(11) 99999-9999" value="' + esc(ct.telefone) + '"></div>'
+      + '<div><label>Chave (apikey)</label><input type="text" inputmode="numeric" data-ct="' + k + '" data-campo="apikey" placeholder="' + (ct.salvo ? 'salva (vazio mantém)' : 'ex.: 1234567') + '" value="' + esc(ct.apikey) + '"></div>'
+      + '<div><button class="bt-x" data-ct-del="' + k + '" title="Remover contato">&times;</button></div></div>';
+  }
+  h += '<div class="oc-acoes">' + (CONT.length < 5 ? '<button class="bt-cinza bt-mini" id="ct-add">+ Contato</button>' : '')
+    + '<button class="bt-verde bt-mini" id="ct-ok">Salvar contatos</button>'
+    + (c.contatos.length ? '<button class="bt-cinza bt-mini" id="ct-teste">Enviar mensagem de teste</button>' : '') + '</div>'
+    + (reg.alerta_status ? '<p class="msg">Último alerta de hoje: ' + esc(reg.alerta_status) + '</p>' : '')
+    + '</details></div>';
+  return h;
+}
+
+function ligarChecagem(){
+  var em = document.getElementById('chk-email'), ml = document.getElementById('chk-ml'), obs = document.getElementById('chk-obs');
+  var salvar = function(msgOk){
+    return api('/checagens', {method:'POST', body: JSON.stringify({email_ok: em.checked, ml_ok: ml.checked, obs: obs.value})})
+      .then(function(r){ toast(r.concluida_em ? 'Checagem concluída. 👍' : msgOk); carregar(); })
+      .catch(function(e){ toast(e.message); carregar(); });
+  };
+  if (em) { em.onchange = function(){ salvar('Marcado. Falta o outro item.'); }; ml.onchange = function(){ salvar('Marcado. Falta o outro item.'); }; }
+  if (obs) obs.onchange = function(){ salvar('Observação salva.'); };
+
+  var ins = app.querySelectorAll('[data-ct]');
+  for (var i = 0; i < ins.length; i++) ins[i].oninput = function(){ CONT[+this.getAttribute('data-ct')][this.getAttribute('data-campo')] = this.value; };
+  var dels = app.querySelectorAll('[data-ct-del]');
+  for (var j = 0; j < dels.length; j++) dels[j].onclick = function(){ CONT.splice(+this.getAttribute('data-ct-del'), 1); render(); abrirAlertas(); };
+  var add = document.getElementById('ct-add');
+  if (add) add.onclick = function(){ CONT.push({nome:'', telefone:'', apikey:''}); render(); abrirAlertas(); };
+  var ok = document.getElementById('ct-ok');
+  if (ok) ok.onclick = function(){
+    ok.disabled = true;
+    api('/alertas/contatos', {method:'POST', body: JSON.stringify({contatos: CONT})})
+      .then(function(){ toast('Contatos salvos.'); CONT = null; carregar(); })
+      .catch(function(e){ ok.disabled = false; toast(e.message); });
+  };
+  var te = document.getElementById('ct-teste');
+  if (te) te.onclick = function(){
+    te.disabled = true; te.textContent = 'Enviando…';
+    api('/alertas/teste', {method:'POST'})
+      .then(function(r){ toast(r.falhas.length ? 'Falhou: ' + r.falhas.join(' | ') : 'Teste enviado para ' + r.enviados.join(', ') + '.'); te.disabled = false; te.textContent = 'Enviar mensagem de teste'; })
+      .catch(function(e){ toast(e.message); te.disabled = false; te.textContent = 'Enviar mensagem de teste'; });
+  };
+}
+function abrirAlertas(){ var d = app.querySelectorAll('details'); for (var i = 0; i < d.length; i++) if (d[i].querySelector('#ct-ok')) d[i].open = true; }
+
+function rotuloCurto(k){ return k === 'urgencia' ? 'urgência' : k === 'prazo_curto' ? 'prazo curto' : 'ruptura'; }
+
+function render(){
+  if (VIEW === 'relatorio') { renderRelatorio(); return; }
+  var i = D.indicadores;
+  var h = abas();
+
+  // ---------------- indicadores
+  h += '<div class="ind-grid">'
+    + '<div class="ind destaque"><div class="num">' + i.cot_abertas + '</div><div class="rot">cotações abertas</div></div>'
+    + '<div class="ind"><div class="num">' + i.sol_pendentes + '</div><div class="rot">solicitações na fila</div></div>'
+    + '<div class="ind"><div class="num">' + i.compras_mes + '</div><div class="rot">compras este mês</div></div>'
+    + '<div class="ind"><div class="num">' + moeda(i.gasto_mes) + '</div><div class="rot">gasto este mês</div></div>'
+    + '</div>';
+
+  h += blocoChecagem();
+  h += blocoOcorrencias();
+
+  // ---------------- atalhos
+  h += '<h3>Atalhos</h3><div class="caixa"><div class="atalhos">'
+    + '<span class="atalho fixo"><a href="../qsol-cotacoes/">Sistema de Cotações</a></span><span class="atalho fixo"><a href="../qsol-validade/">Controle de Validade</a></span>';
+  for (var a = 0; a < D.atalhos.length; a++) {
+    var at = D.atalhos[a];
+    h += '<span class="atalho"><a href="' + esc(at.url) + '" target="_blank" rel="noopener">' + esc(at.nome) + '</a>'
+      + '<button class="bt-x" data-del="atalhos/' + at.id + '" title="Remover">&times;</button></span>';
+  }
+  h += '</div><details><summary>+ Adicionar atalho</summary>'
+    + '<div class="form-linha"><div><label>Nome</label><input type="text" id="a-nome" placeholder="ex.: Drive do setor"></div>'
+    + '<div><label>Endereço (link)</label><input type="text" id="a-url" placeholder="cole o link aqui"></div></div>'
+    + '<div class="form-acao"><button class="bt-verde bt-mini" id="a-ok">Salvar atalho</button></div></details></div>';
+
+  // ---------------- rotina de hoje
+  h += '<h3>Rotina de hoje &middot; ' + dBr(D.dia) + '</h3><div class="caixa">';
+  if (!D.rotinas.length) h += '<p class="msg">Nenhuma tarefa cadastrada ainda. Adicione as tarefas do dia a dia do setor.</p>';
+  for (var r = 0; r < D.rotinas.length; r++) {
+    var rt = D.rotinas[r];
+    var feita = D.marcadas.indexOf(rt.id) >= 0;
+    h += '<div class="item-linha' + (feita ? ' rotina-feita' : '') + '">'
+      + '<input type="checkbox" class="check" data-rot="' + rt.id + '"' + (feita ? ' checked' : '') + '>'
+      + '<div class="txt"><span class="tit">' + esc(rt.titulo) + '</span></div>'
+      + '<span class="pill freq">' + (rt.frequencia === 'diaria' ? 'diária' : rt.frequencia) + '</span>'
+      + '<button class="bt-x" data-del="rotinas/' + rt.id + '" title="Excluir tarefa">&times;</button></div>';
+  }
+  h += '<details><summary>+ Adicionar tarefa</summary>'
+    + '<div class="form-linha"><div><label>Tarefa</label><input type="text" id="r-tit" placeholder="ex.: Conferir e-mails de fornecedores"></div>'
+    + '<div><label>Frequência</label><select id="r-freq"><option value="diaria">Diária</option><option value="semanal">Semanal</option><option value="mensal">Mensal</option></select></div></div>'
+    + '<div class="form-acao"><button class="bt-verde bt-mini" id="r-ok">Salvar tarefa</button></div></details></div>';
+
+  // ---------------- solicitações
+  var ativas = [], fechadas = [];
+  for (var s = 0; s < D.solicitacoes.length; s++) {
+    (D.solicitacoes[s].status === 'pendente' || D.solicitacoes[s].status === 'em_cotacao' ? ativas : fechadas).push(D.solicitacoes[s]);
+  }
+  h += '<h3>Solicitações de compra</h3><div class="caixa">';
+  if (!ativas.length) h += '<p class="msg">Nenhuma solicitação na fila. 👌</p>';
+  for (var s2 = 0; s2 < ativas.length; s2++) h += linhaSol(ativas[s2]);
+  h += '<details><summary>+ Registrar solicitação</summary>'
+    + '<div class="form-linha"><div class="cheio"><label>O que foi pedido</label><input type="text" id="s-desc" placeholder="ex.: 2 cx de papel A4 pra recepção"></div>'
+    + '<div><label>Quem pediu</label><input type="text" id="s-quem" placeholder="nome ou setor"></div>'
+    + '<div><label>Urgência</label><select id="s-urg"><option value="normal">Normal</option><option value="alta">Alta</option><option value="baixa">Baixa</option></select></div></div>'
+    + '<div class="form-acao"><button class="bt-verde bt-mini" id="s-ok">Salvar solicitação</button></div></details>';
+  if (fechadas.length) {
+    h += '<details><summary>Concluídas e negadas (' + fechadas.length + ')</summary>';
+    for (var s3 = 0; s3 < fechadas.length; s3++) h += linhaSol(fechadas[s3]);
+    h += '</details>';
+  }
+  h += '</div>';
+
+  // ---------------- compras
+  h += '<h3>Registro de compras</h3><div class="caixa">'
+    + '<details open><summary>+ Registrar compra</summary>'
+    + '<div class="form-linha"><div class="cheio"><label>O que foi comprado</label><input type="text" id="c-desc" placeholder="ex.: 10 cx Coca Cola lata"></div>'
+    + '<div><label>Fornecedor</label><input type="text" id="c-forn" placeholder="ex.: Distribuidora Sol"></div>'
+    + '<div><label>Valor total (R$)</label><input type="text" inputmode="decimal" id="c-valor" placeholder="0,00"></div>'
+    + '<div><label>Data</label><input type="date" id="c-data" value="' + hojeISO() + '"></div>'
+    + '<div><label>Link do documento (nota, pedido…)</label><input type="text" id="c-doc" placeholder="opcional — cole o link do Drive"></div></div>'
+    + '<div class="form-acao"><button class="bt-verde bt-mini" id="c-ok">Salvar compra</button></div></details>';
+  if (!D.compras.length) {
+    h += '<p class="msg">Nenhuma compra registrada ainda.</p>';
+  } else {
+    var LIM = 15;
+    var mostrar = D.compras.slice(0, LIM);
+    for (var c = 0; c < mostrar.length; c++) h += linhaCompra(mostrar[c]);
+    if (D.compras.length > LIM) {
+      h += '<details><summary>Ver mais antigas (' + (D.compras.length - LIM) + ')</summary>';
+      for (var c2 = LIM; c2 < D.compras.length; c2++) h += linhaCompra(D.compras[c2]);
+      h += '</details>';
+    }
+  }
+  h += '</div>';
+
+  // ---------------- documentos
+  h += '<h3>Documentos</h3><div class="caixa">';
+  if (!D.documentos.length) {
+    h += '<p class="msg">Nenhum documento salvo. Adicione links dos arquivos importantes do setor (contratos, tabelas, procedimentos…).</p>';
+  } else {
+    var porCat = {};
+    for (var dd = 0; dd < D.documentos.length; dd++) {
+      var doc = D.documentos[dd];
+      var cat = doc.categoria || 'Geral';
+      if (!porCat[cat]) porCat[cat] = [];
+      porCat[cat].push(doc);
+    }
+    var cats = [];
+    for (var k in porCat) cats.push(k);
+    cats.sort();
+    for (var k2 = 0; k2 < cats.length; k2++) {
+      h += '<div class="cat-tit">' + esc(cats[k2]) + '</div>';
+      var docs = porCat[cats[k2]];
+      for (var d3 = 0; d3 < docs.length; d3++) {
+        h += '<div class="item-linha"><div class="txt"><a class="doc" href="' + esc(docs[d3].url) + '" target="_blank" rel="noopener">' + esc(docs[d3].nome) + '</a></div>'
+          + '<button class="bt-x" data-del="documentos/' + docs[d3].id + '" title="Remover">&times;</button></div>';
+      }
+    }
+  }
+  h += '<details><summary>+ Adicionar documento</summary>'
+    + '<div class="form-linha"><div><label>Nome</label><input type="text" id="d-nome" placeholder="ex.: Contrato Distribuidora Sol"></div>'
+    + '<div><label>Categoria</label><input type="text" id="d-cat" placeholder="ex.: Contratos" list="d-cats"><datalist id="d-cats"></datalist></div>'
+    + '<div class="cheio"><label>Link do arquivo</label><input type="text" id="d-url" placeholder="cole o link do Drive aqui"></div></div>'
+    + '<div class="form-acao"><button class="bt-verde bt-mini" id="d-ok">Salvar documento</button></div></details></div>';
+
+  app.innerHTML = h;
+  ligar();
+}
+
+function linhaSol(s){
+  return '<div class="item-linha"><div class="txt"><span class="tit">' + esc(s.descricao) + '</span>'
+    + '<div class="sub">' + (s.solicitante ? esc(s.solicitante) + ' · ' : '') + dBr(s.criada_em) + '</div></div>'
+    + (s.urgencia === 'alta' ? '<span class="pill alta">alta</span>' : '')
+    + '<select class="status" data-sol="' + s.id + '">'
+    + '<option value="pendente"' + (s.status === 'pendente' ? ' selected' : '') + '>Pendente</option>'
+    + '<option value="em_cotacao"' + (s.status === 'em_cotacao' ? ' selected' : '') + '>Em cotação</option>'
+    + '<option value="comprado"' + (s.status === 'comprado' ? ' selected' : '') + '>Comprado</option>'
+    + '<option value="negado"' + (s.status === 'negado' ? ' selected' : '') + '>Negado</option></select>'
+    + '<button class="bt-x" data-del="solicitacoes/' + s.id + '" title="Excluir">&times;</button></div>';
+}
+
+function linhaCompra(c){
+  return '<div class="item-linha"><div class="txt"><span class="tit">' + esc(c.descricao) + '</span>'
+    + '<div class="sub">' + (c.fornecedor ? esc(c.fornecedor) + ' · ' : '') + dBr(c.data_compra)
+    + (c.doc_url ? ' · <a class="doc" href="' + esc(c.doc_url) + '" target="_blank" rel="noopener">documento</a>' : '') + '</div></div>'
+    + (c.valor != null ? '<span class="valor">' + moeda(c.valor) + '</span>' : '')
+    + '<button class="bt-x" data-del="compras/' + c.id + '" title="Excluir">&times;</button></div>';
+}
+
+function ligarComum(){
+  var vs = app.querySelectorAll('[data-view]');
+  for (var v = 0; v < vs.length; v++) vs[v].onclick = function(){
+    VIEW = this.getAttribute('data-view');
+    history.replaceState(null, '', VIEW === 'relatorio' ? '#relatorio' : location.pathname);
+    window.scrollTo(0, 0);
+    render();
+  };
+}
+
+function ligarOcorrencias(){
+  var bts = app.querySelectorAll('[data-oc]');
+  for (var i = 0; i < bts.length; i++) bts[i].onclick = function(){
+    var k = this.getAttribute('data-oc');
+    if (OC.tipo === k) { OC = { tipo: null, setor: null, texto: '', dia: '' }; }
+    else { OC.tipo = k; if (OC.setor && D.tipos[k].setores.indexOf(OC.setor) < 0) OC.setor = null; }
+    render();
+    var txt = document.getElementById('oc-txt');
+    if (txt && OC.setor) txt.focus();
+  };
+  var chips = app.querySelectorAll('[data-setor]');
+  for (var c = 0; c < chips.length; c++) chips[c].onclick = function(){
+    OC.setor = this.getAttribute('data-setor');
+    for (var z = 0; z < chips.length; z++) chips[z].className = 'chip' + (chips[z] === this ? ' on' : '');
+    document.getElementById('oc-txt').focus();
+  };
+  var txt = document.getElementById('oc-txt');
+  if (txt) txt.oninput = function(){ OC.texto = this.value; };
+  var dia = document.getElementById('oc-dia');
+  if (dia) dia.onchange = function(){ OC.dia = this.value; };
+  var cancel = document.getElementById('oc-cancel');
+  if (cancel) cancel.onclick = function(){ OC = { tipo: null, setor: null, texto: '', dia: '' }; render(); };
+  var ok = document.getElementById('oc-ok');
+  if (ok) ok.onclick = function(){
+    if (!OC.setor) { toast('Escolha o setor.'); return; }
+    if (!OC.texto.trim()) { toast('Escreva o que aconteceu.'); document.getElementById('oc-txt').focus(); return; }
+    ok.disabled = true;
+    api('/ocorrencias', {method:'POST', body: JSON.stringify({tipo: OC.tipo, setor: OC.setor, descricao: OC.texto, dia: OC.dia || hojeISO()})})
+      .then(function(reg){
+        OC = { tipo: null, setor: null, texto: '', dia: '' };
+        carregar();
+        toast('Registrado.', 'Desfazer', function(){
+          api('/ocorrencias/' + reg.id, {method:'DELETE'}).then(function(){ toast('Registro desfeito.'); carregar(); }).catch(function(e){ toast(e.message); });
+        });
+      })
+      .catch(function(e){ ok.disabled = false; toast(e.message); });
+  };
+}
+
+// ======================================================= relatório ===
+var REL = { preset: 'mes', de: '', ate: '', dados: null, carregando: false };
+function isoDe(d){ return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
+function periodo(preset){
+  var h = new Date(), de, ate;
+  if (preset === 'mes') { de = new Date(h.getFullYear(), h.getMonth(), 1); ate = new Date(h.getFullYear(), h.getMonth() + 1, 0); }
+  else if (preset === 'mes_passado') { de = new Date(h.getFullYear(), h.getMonth() - 1, 1); ate = new Date(h.getFullYear(), h.getMonth(), 0); }
+  else if (preset === '7d') { ate = h; de = new Date(h.getFullYear(), h.getMonth(), h.getDate() - 6); }
+  else if (preset === '30d') { ate = h; de = new Date(h.getFullYear(), h.getMonth(), h.getDate() - 29); }
+  else if (preset === 'ano') { de = new Date(h.getFullYear(), 0, 1); ate = new Date(h.getFullYear(), 11, 31); }
+  return { de: isoDe(de), ate: isoDe(ate) };
+}
+function buscarRelatorio(){
+  REL.carregando = true; renderRelatorio();
+  api('/relatorio?de=' + REL.de + '&ate=' + REL.ate).then(function(d){ REL.dados = d; REL.carregando = false; renderRelatorio(); })
+    .catch(function(e){ REL.carregando = false; toast(e.message); renderRelatorio(); });
+}
+
+function renderRelatorio(){
+  if (!REL.de) { var p = periodo(REL.preset); REL.de = p.de; REL.ate = p.ate; buscarRelatorio(); return; }
+  var h = abas();
+  var presets = [['mes','Este mês'],['mes_passado','Mês passado'],['7d','Últimos 7 dias'],['30d','Últimos 30 dias'],['ano','Este ano'],['livre','Escolher datas']];
+  h += '<div class="caixa rel-filtro"><div class="campo"><label for="rel-preset">Período</label><select id="rel-preset">';
+  for (var i = 0; i < presets.length; i++) h += '<option value="' + presets[i][0] + '"' + (REL.preset === presets[i][0] ? ' selected' : '') + '>' + presets[i][1] + '</option>';
+  h += '</select></div><div class="campo"><label for="rel-de">De</label><input type="date" id="rel-de" value="' + REL.de + '"></div>'
+    + '<div class="campo"><label for="rel-ate">Até</label><input type="date" id="rel-ate" value="' + REL.ate + '"></div></div>';
+
+  var d = REL.dados;
+  if (REL.carregando || !d) { app.innerHTML = h + '<p class="msg">Gerando relatório…</p>'; ligarComum(); ligarRelatorio(); return; }
+
+  h += '<div class="so-print"><h2 style="font-size:20px">Relatório de indicadores de compras</h2><p class="msg">Período: ' + dBr(d.de) + ' a ' + dBr(d.ate) + ' · gerado em ' + dBr(hojeISO()) + '</p></div>';
+
+  // totais
+  var porTipo = {}, porSetor = {};
+  for (var t = 0; t < ORDEM_TIPOS.length; t++) { porTipo[ORDEM_TIPOS[t]] = []; porSetor[ORDEM_TIPOS[t]] = {}; }
+  for (var o = 0; o < d.ocorrencias.length; o++) {
+    var oc = d.ocorrencias[o];
+    if (!porTipo[oc.tipo]) continue;
+    porTipo[oc.tipo].push(oc);
+    porSetor[oc.tipo][oc.setor] = (porSetor[oc.tipo][oc.setor] || 0) + 1;
+  }
+  h += '<div class="rel-tot">';
+  for (var t2 = 0; t2 < ORDEM_TIPOS.length; t2++) {
+    var k = ORDEM_TIPOS[t2], n = porTipo[k].length, a = d.anterior.totais[k] || 0, dif = n - a;
+    var txt = dif === 0 ? 'igual ao período anterior (' + a + ')' : (dif > 0 ? '▲ ' + dif + ' a mais' : '▼ ' + (-dif) + ' a menos') + ' que o período anterior (' + a + ')';
+    h += '<div class="ind ' + k + '"><div class="num">' + n + '</div><div class="rot">' + esc(d.tipos[k].nome) + '</div>'
+      + '<div class="delta ' + (dif > 0 ? 'sobe' : dif < 0 ? 'desce' : '') + '">' + txt + '</div></div>';
+  }
+  h += '</div>';
+
+  // por setor
+  for (var t3 = 0; t3 < ORDEM_TIPOS.length; t3++) {
+    var kk = ORDEM_TIPOS[t3], mapa = porSetor[kk], lista = [];
+    for (var st in mapa) lista.push([st, mapa[st]]);
+    lista.sort(function(x, y){ return y[1] - x[1] || x[0].localeCompare(y[0]); });
+    h += '<h3>' + esc(d.tipos[kk].nome) + ' · por setor</h3><div class="caixa">';
+    if (!lista.length) { h += '<p class="msg" style="margin:0">Nenhum registro no período.</p>'; }
+    else {
+      var max = lista[0][1];
+      h += '<div class="barras">';
+      for (var b = 0; b < lista.length; b++) {
+        h += '<div class="barra"><span>' + esc(lista[b][0]) + '</span><span class="trilho"><span class="enche ' + kk + '" style="display:block;width:' + Math.max(4, Math.round(lista[b][1] / max * 100)) + '%"></span></span><span class="q">' + lista[b][1] + '</span></div>';
+      }
+      h += '</div>';
+    }
+    h += '</div>';
+  }
+
+  // lista completa
+  h += '<h3>Todos os registros (' + d.ocorrencias.length + ')</h3><div class="caixa">';
+  if (!d.ocorrencias.length) h += '<p class="msg" style="margin:0">Nenhum registro no período.</p>';
+  else {
+    h += '<table class="rel"><thead><tr><th>Data</th><th>Indicador</th><th>Setor</th><th>O que aconteceu</th></tr></thead><tbody>';
+    for (var r = 0; r < d.ocorrencias.length; r++) {
+      var x = d.ocorrencias[r];
+      h += '<tr><td style="white-space:nowrap">' + dBr(x.dia) + '</td><td><span class="pill ' + x.tipo + '">' + rotuloCurto(x.tipo) + '</span></td><td>' + esc(x.setor) + '</td><td>' + esc(x.descricao) + '</td></tr>';
+    }
+    h += '</tbody></table>';
+  }
+  h += '</div><div class="rel-acoes"><button class="bt-verde" id="rel-print">Imprimir / salvar PDF</button><button class="bt-cinza" id="rel-csv">Baixar planilha (Excel)</button></div>';
+
+  app.innerHTML = h;
+  ligarComum();
+  ligarRelatorio();
+}
+
+function ligarRelatorio(){
+  var pr = document.getElementById('rel-preset');
+  pr.onchange = function(){
+    REL.preset = this.value;
+    if (REL.preset === 'livre') { renderRelatorio(); document.getElementById('rel-de').focus(); return; }
+    var p = periodo(REL.preset); REL.de = p.de; REL.ate = p.ate; buscarRelatorio();
+  };
+  var mudouData = function(){
+    var de = document.getElementById('rel-de').value, ate = document.getElementById('rel-ate').value;
+    if (!de || !ate) return;
+    if (de > ate) { toast('A data inicial precisa ser antes da final.'); return; }
+    REL.preset = 'livre'; REL.de = de; REL.ate = ate; buscarRelatorio();
+  };
+  document.getElementById('rel-de').onchange = mudouData;
+  document.getElementById('rel-ate').onchange = mudouData;
+  var bp = document.getElementById('rel-print');
+  if (bp) bp.onclick = function(){ window.print(); };
+  var bc = document.getElementById('rel-csv');
+  if (bc) bc.onclick = function(){
+    var d = REL.dados, linhas = [['Data','Indicador','Setor','O que aconteceu']];
+    for (var i = 0; i < d.ocorrencias.length; i++) {
+      var o = d.ocorrencias[i];
+      linhas.push([dBr(o.dia).replace(/\/(\d\d)$/, '/20$1'), d.tipos[o.tipo] ? d.tipos[o.tipo].nome : o.tipo, o.setor, o.descricao]);
+    }
+    var csv = linhas.map(function(l){ return l.map(function(c){ return '"' + String(c).replace(/"/g, '""') + '"'; }).join(';'); }).join('\r\n');
+    var blob = new Blob(['\ufeff' + csv], {type: 'text/csv;charset=utf-8'});
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'indicadores-compras_' + d.de + '_a_' + d.ate + '.csv';
+    document.body.appendChild(a); a.click(); a.remove();
+  };
+}
+
+function ligar(){
+  ligarComum();
+  ligarOcorrencias();
+  ligarChecagem();
+  var dels = app.querySelectorAll('[data-del]');
+  for (var i = 0; i < dels.length; i++) dels[i].onclick = function(){
+    var alvo = this.getAttribute('data-del');
+    if (!confirm('Excluir este registro?')) return;
+    api('/' + alvo, {method:'DELETE'}).then(function(){ toast('Excluído.'); carregar(); }).catch(function(e){ toast(e.message); });
+  };
+
+  var rots = app.querySelectorAll('[data-rot]');
+  for (var j = 0; j < rots.length; j++) rots[j].onchange = function(){
+    api('/rotinas/' + this.getAttribute('data-rot') + '/marcar', {method:'POST', body: JSON.stringify({dia: hojeISO(), feita: this.checked})})
+      .then(carregar).catch(function(e){ toast(e.message); });
+  };
+
+  var sols = app.querySelectorAll('[data-sol]');
+  for (var k = 0; k < sols.length; k++) sols[k].onchange = function(){
+    api('/solicitacoes/' + this.getAttribute('data-sol') + '/status', {method:'POST', body: JSON.stringify({status: this.value})})
+      .then(function(){ toast('Status atualizado.'); carregar(); }).catch(function(e){ toast(e.message); });
+  };
+
+  var aOk = document.getElementById('a-ok');
+  if (aOk) aOk.onclick = function(){
+    var nome = document.getElementById('a-nome').value.trim();
+    var u = document.getElementById('a-url').value.trim();
+    if (!nome || !u) { toast('Preencha o nome e o link.'); return; }
+    api('/atalhos', {method:'POST', body: JSON.stringify({nome:nome, url:u})})
+      .then(function(){ toast('Atalho salvo.'); carregar(); }).catch(function(e){ toast(e.message); });
+  };
+
+  var rOk = document.getElementById('r-ok');
+  if (rOk) rOk.onclick = function(){
+    var tit = document.getElementById('r-tit').value.trim();
+    if (!tit) { toast('Escreva a tarefa.'); return; }
+    api('/rotinas', {method:'POST', body: JSON.stringify({titulo:tit, frequencia: document.getElementById('r-freq').value})})
+      .then(function(){ toast('Tarefa salva.'); carregar(); }).catch(function(e){ toast(e.message); });
+  };
+
+  var sOk = document.getElementById('s-ok');
+  if (sOk) sOk.onclick = function(){
+    var desc = document.getElementById('s-desc').value.trim();
+    if (!desc) { toast('Descreva a solicitação.'); return; }
+    api('/solicitacoes', {method:'POST', body: JSON.stringify({descricao:desc, solicitante: document.getElementById('s-quem').value.trim(), urgencia: document.getElementById('s-urg').value})})
+      .then(function(){ toast('Solicitação registrada.'); carregar(); }).catch(function(e){ toast(e.message); });
+  };
+
+  var cOk = document.getElementById('c-ok');
+  if (cOk) cOk.onclick = function(){
+    var desc = document.getElementById('c-desc').value.trim();
+    if (!desc) { toast('Descreva a compra.'); return; }
+    api('/compras', {method:'POST', body: JSON.stringify({
+      descricao: desc,
+      fornecedor: document.getElementById('c-forn').value.trim(),
+      valor: parseValor(document.getElementById('c-valor').value),
+      data_compra: document.getElementById('c-data').value,
+      doc_url: document.getElementById('c-doc').value.trim()
+    })}).then(function(){ toast('Compra registrada.'); carregar(); }).catch(function(e){ toast(e.message); });
+  };
+
+  var dOk = document.getElementById('d-ok');
+  if (dOk) dOk.onclick = function(){
+    var nome = document.getElementById('d-nome').value.trim();
+    var u = document.getElementById('d-url').value.trim();
+    if (!nome || !u) { toast('Preencha o nome e o link.'); return; }
+    api('/documentos', {method:'POST', body: JSON.stringify({nome:nome, categoria: document.getElementById('d-cat').value.trim(), url:u})})
+      .then(function(){ toast('Documento salvo.'); carregar(); }).catch(function(e){ toast(e.message); });
+  };
+
+  var dl = document.getElementById('d-cats');
+  if (dl && D) {
+    var vistas = {};
+    var ops = '';
+    for (var m = 0; m < D.documentos.length; m++) {
+      var cat = D.documentos[m].categoria;
+      if (cat && !vistas[cat]) { vistas[cat] = true; ops += '<option value="' + esc(cat) + '">'; }
+    }
+    dl.innerHTML = ops;
+  }
+}
+
+boot();
+</script>
+</body>
+</html>
